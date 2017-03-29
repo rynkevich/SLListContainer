@@ -10,7 +10,7 @@ Singly Linked List container class for Delphi. BETA
 ![Singly Linked List structure](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Singly-linked-list.svg/408px-Singly-linked-list.svg.png)
 
 ### Implementation features
-This particular implementation was created in study purposed, but it can actually be used for any projects that require use of SLL.
+Although this particular implementation has been created in study purposes, but it can actually be used for any projects that require use of SLL.
 There are options of:
 * _Creation_ of an empty or a filled list;
 * _Appending_ a node or a group of nodes to the end;
