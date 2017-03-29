@@ -27,5 +27,5 @@ There are options of:
 * _Setting_ or _getting_ a node content;
 * etc.
 
-Additionally, SLL is modified by addition of header node for more effective use of structure,
+Additionally, SLL is modified with header node for more effective use of structure,
 some methods are accelerated by caching of the last and the last requested nodes.
