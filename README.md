@@ -12,20 +12,20 @@ Singly Linked List container class for Delphi. BETA
 ### Implementation features
 Although this particular implementation has been created in study purposes, it can actually be used for any projects that require use of SLL.
 There are options of:
-* _Creation_ of an empty or a filled list;
-* _Appending_ a node or a group of nodes to the end;
-* _Cutting_ the last node;
-* _Insertion_ of a node or a group of nodes to the end;
-* _Removal_ of a various quantity of nodes;
-* _Popping_ the last or the first node, _popping_ a node with specified index;
-* _Counting_ nodes with specified content;
-* Ascending or descending _sort_ of a list;
-* _Reversion_ of a list;
-* _Cleansing_ of a list;
-* Getting a _list size_ (quantity of meaningful nodes);
-* _Check for emptiness_ of a list;
-* _Setting_ or _getting_ a node content;
-* etc.
+* **Creation** of an empty or a filled list;
+* **Appending** a node or a group of nodes to the end;
+* **Cutting** the last node;
+* **Insertion** of a node or a group of nodes to the end;
+* **Removal** of a various quantity of nodes;
+* **Popping** the last or the first node, _popping_ a node with specified index;
+* **Counting** nodes with specified content;
+* Ascending or descending **sort** of a list;
+* **Reversion** of a list;
+* **Cleansing** of a list;
+* Getting a **list size** (quantity of meaningful nodes);
+* **Check for emptiness** of a list;
+* **Setting** or **getting** a node content;
+* _etc._
 
 Additionally, SLL is modified with header node for more effective use of structure,
-some methods are accelerated by caching of the last and the last requested nodes.
+some methods are accelerated by caching the last and the last requested nodes.
