@@ -9,7 +9,7 @@ type
   TSortOrder = (ASCENDING, DESCENDING);
   TSinglyLL<T> = class
     type
-      PNode = ^TNode;
+      PNode = PNode;
       TNode = record
         Content: T;
         NextNode: PNode;
