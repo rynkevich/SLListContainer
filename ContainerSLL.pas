@@ -3,57 +3,58 @@ unit ContainerSLL;
 interface
 
 uses
-  SysUtils;
+  SysUtils, System.Generics.Defaults;
 
 type
   TSortOrder = (ASCENDING, DESCENDING);
-  TListContent = string; //change to set another content type
-  PNode = ^TNode;
-  TNode = record
-    Content: TListContent;
-    NextNode: PNode;
-  end;
-  TNodeData = record
-    Index: Integer;
-    Node: PNode;
-  end;
-  TSinglyLL = class
+  TSinglyLL<T> = class
+    type
+      PNode = ^TNode;
+      TNode = record
+        Content: T;
+        NextNode: PNode;
+      end;
+      TNodeData = record
+        Index: Integer;
+        Node: PNode;
+      end;
     private
       FHeaderNode: PNode;
       FLastNode: PNode;
       FLastRequested: TNodeData;
       function CheckIfEmpty: Boolean;
-      function ExchangeCondition(const SortOrder: TSortOrder;
-        const FirstElement, SecondElement: TListContent): Boolean;
-      function GetContent(const Index: Word): TListContent;
+      function ExchangeCondition(const ASortOrder: TSortOrder;
+        const ACompareResult: Integer): Boolean;
+      function GetContent(const AIndex: Word): T;
       function GetSize: Word;
-      function NodeDataWithIndex(const Index: Word): TNodeData;
-      procedure SetContent(const Index: Word; const NodeContent: TListContent);
+      function NodeDataWithIndex(const AIndex: Word): TNodeData;
+      procedure SetContent(const AIndex: Word; const ANodeContent: T);
     public
       constructor Create; overload;
-      constructor Create(const NodesContent: array of TListContent); overload;
+      constructor Create(const ANodesContent: array of T); overload;
       destructor Destroy; override;
-      procedure Append(const NodeContent: TListContent); overload;
-      procedure Append(const NodesContent: array of TListContent); overload;
+      procedure Append(const ANodeContent: T); overload;
+      procedure Append(const ANodesContent: array of T); overload;
       procedure Clear;
-      function Count(const Element: TListContent): Word;
-      procedure Cut(Quantity: Word = 1);
-      procedure DumpStructure;
-      procedure Insert(const Index: Word; const NodeContent: TListContent); overload;
-      procedure Insert(const Index: Word; const NodesContent: array of TListContent); overload;
-      function Pop(const Index: Word = 0): TListContent;
-      function PopLast: TListContent;
-      procedure Remove(const Index: Word; Quantity: Word = 1);
+      function Count(const AElement: T): Word;
+      procedure Cut(AQuantity: Word = 1);
+      procedure Insert(const AIndex: Word; const ANodeContent: T); overload;
+      procedure Insert(const AIndex: Word; const ANodesContent: array of T); overload;
+      function Pop(const AIndex: Word = 0): T;
+      function PopLast: T;
+      procedure Remove(const AIndex: Word; AQuantity: Word = 1);
       procedure Reverse;
-      procedure Sort(const SortOrder: TSortOrder = ASCENDING);
+      procedure Sort(const ASortOrder: TSortOrder = ASCENDING); overload;
+      procedure Sort(const AContentComparer: IComparer<T>;
+        const ASortOrder: TSortOrder = ASCENDING); overload;
       property IsEmpty: Boolean read CheckIfEmpty;
-      property Items[const index: Word]: TListContent read GetContent write SetContent;
+      property Items[const index: Word]: T read GetContent write SetContent;
       property Size: Word read GetSize;
   end;
 
 implementation
 
-function TSinglyLL.CheckIfEmpty: Boolean;
+function TSinglyLL<T>.CheckIfEmpty: Boolean;
 begin
   if FHeaderNode^.NextNode = Nil then
     Result := True
@@ -61,31 +62,31 @@ begin
     Result := False;
 end;
 
-function TSinglyLL.ExchangeCondition(const SortOrder: TSortOrder;
-  const FirstElement, SecondElement: TListContent): Boolean;
+function TSinglyLL<T>.ExchangeCondition(const ASortOrder: TSortOrder;
+  const ACompareResult: Integer): Boolean;
 begin
   Result := False;
-  if FirstElement > SecondElement then
+  if ACompareResult > 0 then
   begin
-    if SortOrder = ASCENDING then
+    if ASortOrder = ASCENDING then
       Result := True;
   end
   else
-    if SortOrder = DESCENDING then
+    if ASortOrder = DESCENDING then
       Result := True;
 end;
 
-function TSinglyLL.GetContent(const Index: Word): TListContent;
+function TSinglyLL<T>.GetContent(const AIndex: Word): T;
 var
   CurrentData: TNodeData;
 begin
-  CurrentData := NodeDataWithIndex(Index);
+  CurrentData := NodeDataWithIndex(AIndex);
   Result := CurrentData.Node^.Content;
   FLastRequested.Node := CurrentData.Node;
   FLastRequested.Index := CurrentData.Index;
 end;
 
-function TSinglyLL.GetSize: Word;
+function TSinglyLL<T>.GetSize: Word;
 var
   CurrentNode: TNodeData;
 begin
@@ -112,11 +113,11 @@ begin
   end;
 end;
 
-function TSinglyLL.NodeDataWithIndex(const Index: Word): TNodeData;
+function TSinglyLL<T>.NodeDataWithIndex(const AIndex: Word): TNodeData;
 var
   CurrentData: TNodeData;
 begin
-  if (FLastRequested.Node <> Nil) and (Index >= FLastRequested.Index) then
+  if (FLastRequested.Node <> Nil) and (AIndex >= FLastRequested.Index) then
   begin
     CurrentData.Node := FLastRequested.Node;
     CurrentData.Index := FLastRequested.Index;
@@ -126,7 +127,7 @@ begin
     CurrentData.Node := FHeaderNode^.NextNode;
     CurrentData.Index := 0;
   end;
-  while CurrentData.Index <> Index do
+  while CurrentData.Index <> AIndex do
   begin
     CurrentData.Node := CurrentData.Node^.NextNode;
     Inc(CurrentData.Index);
@@ -134,25 +135,25 @@ begin
   Result := CurrentData;
 end;
 
-procedure TSinglyLL.SetContent(const Index: Word; const NodeContent: TListContent);
+procedure TSinglyLL<T>.SetContent(const AIndex: Word; const ANodeContent: T);
 var
   CurrentData: TNodeData;
 begin
-  if Index >= Size then
+  if AIndex >= Size then
     raise Exception.Create('Invalid item index')
   else
   begin
-    CurrentData := NodeDataWithIndex(Index);
+    CurrentData := NodeDataWithIndex(AIndex);
     if CurrentData.Node = Nil then
-      Append(NodeContent)
+      Append(ANodeContent)
     else
-      CurrentData.Node^.Content := NodeContent;
+      CurrentData.Node^.Content := ANodeContent;
     FLastRequested.Node := CurrentData.Node;
     FLastRequested.Index := CurrentData.Index;
   end;
 end;
 
-constructor TSinglyLL.Create;
+constructor TSinglyLL<T>.Create;
 begin
   inherited Create;
   New(FHeaderNode);
@@ -161,119 +162,92 @@ begin
   FLastNode := FHeaderNode;
 end;
 
-constructor TSinglyLL.Create(const NodesContent: array of TListContent);
+constructor TSinglyLL<T>.Create(const ANodesContent: array of T);
 begin
   inherited Create;
   New(FHeaderNode);
   FHeaderNode^.NextNode := Nil;
   FLastRequested.Node := Nil;
   FLastNode := FHeaderNode;
-  Append(NodesContent);
+  Append(ANodesContent);
 end;
 
-destructor TSinglyLL.Destroy;
+destructor TSinglyLL<T>.Destroy;
 begin
   Dispose(FHeaderNode);
   inherited Destroy;
 end;
 
-procedure TSinglyLL.Append(const NodeContent: TListContent);
+procedure TSinglyLL<T>.Append(const ANodeContent: T);
 var
   CurrentNode: PNode;
 begin
   CurrentNode := FLastNode;
   New(CurrentNode^.NextNode);
   CurrentNode := CurrentNode^.NextNode;
-  CurrentNode^.Content := NodeContent;
+  CurrentNode^.Content := ANodeContent;
   CurrentNode^.NextNode := Nil;
   FLastNode := CurrentNode;
 end;
 
-procedure TSinglyLL.Append(const NodesContent: array of TListContent);
+procedure TSinglyLL<T>.Append(const ANodesContent: array of T);
 var
   I: Word;
 begin
-  for I := 0 to High(NodesContent) do
-    Append(NodesContent[I]);
+  for I := 0 to High(ANodesContent) do
+    Append(ANodesContent[I]);
 end;
 
-procedure TSinglyLL.Clear;
+procedure TSinglyLL<T>.Clear;
 begin
   while FHeaderNode^.NextNode <> Nil do
     Cut;
 end;
 
-function TSinglyLL.Count(const Element: TListContent): Word;
+function TSinglyLL<T>.Count(const AElement: T): Word;
 var
   Counter: Word;
   CurrentNode: PNode;
+  ContentComparer: TComparer<T>;
 begin
   Counter := 0;
   CurrentNode := FHeaderNode^.NextNode;
   while CurrentNode <> Nil do
   begin
-    if CurrentNode^.Content = Element then
+    if ContentComparer.Compare(CurrentNode^.Content, AElement) = 0 then
       Inc(Counter);
     CurrentNode := CurrentNode^.NextNode;
   end;
   Result := Counter;
 end;
 
-procedure TSinglyLL.Cut(Quantity: Word = 1);
+procedure TSinglyLL<T>.Cut(AQuantity: Word = 1);
 var
   I: Word;
 begin
-  for I := Quantity downto 1 do
+  for I := AQuantity downto 1 do
     PopLast;
 end;
 
-procedure TSinglyLL.DumpStructure;
-const
-  DumpFileName = 'Dump.txt';
-var
-  I: Word;
-  DumpFile: TextFile;
+procedure TSinglyLL<T>.Insert(const AIndex: Word; const ANodeContent: T);
 begin
-  try
-    AssignFile(DumpFile, DumpFileName);
-    Rewrite(DumpFile);
-    if IsEmpty then
-      Write(DumpFile, 'The structure is empty.')
-    else
-    begin
-      Writeln(DumpFile, 'Structure dump begin:');
-      for I := 0 to (Size - 1) do
-      begin
-        Writeln(DumpFile, '  ', Items[I]);
-      end;
-      Writeln(DumpFile, 'Structure dump end.');
-    end;
-    CloseFile(DumpFile);
-  except
-    CloseFile(DumpFile);
-    raise Exception.Create('Structure dump fail. Possible access error.');
-  end;
+  Insert(AIndex, [ANodeContent]);
 end;
 
-procedure TSinglyLL.Insert(const Index: Word; const NodeContent: TListContent);
-begin
-  Insert(Index, [NodeContent]);
-end;
-
-procedure TSinglyLL.Insert(const Index: Word; const NodesContent: array of TListContent);
+procedure TSinglyLL<T>.Insert(const AIndex: Word; const ANodesContent: array of T);
 var
   CurrentData: TNodeData;
   NextNode, BuffLastNode: PNode;
 begin
-  CurrentData := NodeDataWithIndex(Index - 1);
+  CurrentData := NodeDataWithIndex(AIndex - 1);
   if CurrentData.Node^.NextNode = Nil then
-    Append(NodesContent)
+    Append(ANodesContent)
   else
   begin
     NextNode := CurrentData.Node^.NextNode;
     BuffLastNode := FLastNode;
     FLastNode := CurrentData.Node;
-    Append(NodesContent);
+    Append(ANodesContent);
     FLastNode^.NextNode := NextNode;
     FLastNode := BuffLastNode;
   end;
@@ -281,19 +255,19 @@ begin
   FLastRequested.Index := CurrentData.Index;
 end;
 
-function TSinglyLL.Pop(const Index: Word = 0): TListContent;
+function TSinglyLL<T>.Pop(const AIndex: Word = 0): T;
 var
   CurrentData: TNodeData;
   BuffLastNode: PNode;
 begin
   FLastRequested.Node := Nil;
-  if Index = 0 then
+  if AIndex = 0 then
   begin
     CurrentData.Node := FHeaderNode;
     CurrentData.Index := -1;
   end
   else
-    CurrentData := NodeDataWithIndex(Index - 1);
+    CurrentData := NodeDataWithIndex(AIndex - 1);
   BuffLastNode := FLastNode;
   FLastNode := CurrentData.Node^.NextNode;
   Result := FLastNode^.Content;
@@ -309,7 +283,7 @@ begin
   end;
 end;
 
-function TSinglyLL.PopLast: TListContent;
+function TSinglyLL<T>.PopLast: T;
 var
   I: Word;
   CurrentNode: PNode;
@@ -330,18 +304,18 @@ begin
   end;
 end;
 
-procedure TSinglyLL.Remove(const Index: Word; Quantity: Word = 1);
+procedure TSinglyLL<T>.Remove(const AIndex: Word; AQuantity: Word = 1);
 var
   CurrentData: TNodeData;
   BuffLastNode: PNode;
 begin
-  if Index = 0 then
+  if AIndex = 0 then
   begin
     CurrentData.Node := FHeaderNode;
     CurrentData.Index := -1;
   end
   else
-    CurrentData := NodeDataWithIndex(Index - 1);
+    CurrentData := NodeDataWithIndex(AIndex - 1);
   if CurrentData.Node^.NextNode^.NextNode = Nil then
     Cut
   else
@@ -349,10 +323,10 @@ begin
     FLastRequested.Node := Nil;
     BuffLastNode := FLastNode;
     FLastNode := CurrentData.Node^.NextNode;
-    while (Quantity <> 0) and (FLastNode <> Nil) do
+    while (AQuantity <> 0) and (FLastNode <> Nil) do
     begin
       FLastNode := FLastNode^.NextNode;
-      Dec(Quantity);
+      Dec(AQuantity);
     end;
     if FLastNode <> Nil then
     begin
@@ -364,10 +338,9 @@ begin
   end;
 end;
 
-procedure TSinglyLL.Reverse;
+procedure TSinglyLL<T>.Reverse;
 var
-  CurrentNode: PNode;
-  NewHeaderNode: PNode;
+  CurrentNode, NewHeaderNode: PNode;
 begin
   New(CurrentNode);
   NewHeaderNode := CurrentNode;
@@ -382,10 +355,16 @@ begin
   FHeaderNode := NewHeaderNode;
 end;
 
-procedure TSinglyLL.Sort(const SortOrder: TSortOrder = ASCENDING);
+procedure TSinglyLL<T>.Sort(const ASortOrder: TSortOrder = ASCENDING);
+begin
+  Sort(TComparer<T>.Default, ASortOrder);
+end;
+
+procedure TSinglyLL<T>.Sort(const AContentComparer: IComparer<T>;
+  const ASortOrder: TSortOrder = ASCENDING);
 var
   CurrentNode: PNode;
-  BuffContentElement: TListContent;
+  BuffContentElement: T;
   IsSorted: Boolean;
 begin
   repeat
@@ -393,7 +372,9 @@ begin
     CurrentNode := FHeaderNode^.NextNode;
     while CurrentNode^.NextNode <> Nil do
     begin
-      if ExchangeCondition(SortOrder, CurrentNode^.Content, CurrentNode^.NextNode^.Content) then
+      if ExchangeCondition(ASortOrder,
+        AContentComparer.Compare(CurrentNode^.Content,
+        CurrentNode^.NextNode^.Content)) then
       begin
         IsSorted := False;
         BuffContentElement := CurrentNode^.Content;
