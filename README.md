@@ -1,5 +1,5 @@
 # SLListContainer
-Singly Linked List container class for Delphi. BETA
+Singly Linked List container class for Delphi.
 
 ### Linked List
 **Linked list** is a linear collection of data elements, called nodes, each pointing to the next node by means of a pointer. It is a data structure consisting of a group of nodes which together represent a sequence. Under the simplest form, each node is composed of data and a link to the next node in the sequence. This structure allows for efficient insertion or removal of elements from any position in the sequence during iteration.
