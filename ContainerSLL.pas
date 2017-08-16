@@ -174,6 +174,7 @@ end;
 
 destructor TSinglyLL<T>.Destroy;
 begin
+  Clear;
   Dispose(FHeaderNode);
   inherited Destroy;
 end;
